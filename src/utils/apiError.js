@@ -3,10 +3,10 @@ class apiError extends Error {
     statuscode,
     message = "Sometg=hing went wrong",
     // array to handle multiple error
-    error = [],
+    errors = [],
     stack = ""
   ) {
-    super(message); 
+    super(message);
     // calls parent (ERROR) constructor to send message
     this.statuscode = statuscode;
     // error --> noData
@@ -14,5 +14,11 @@ class apiError extends Error {
     this.message = message;
     this.Success = false;
     this.errors = errors;
+    if (stack) {
+      this.stack=stack
+    }
+    else{
+      Error.captureStackTrace(this,this.constructor)
+    }
   }
 }
