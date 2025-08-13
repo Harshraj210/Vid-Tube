@@ -6,3 +6,8 @@ const asyncHandler = (requestHandler) => {
     });
   };
 };
+export {asyncHandler}
+
+// to wrap all async functions so we need not write try catch in every controller
+
+// all errors are automatically passed to express middleware
