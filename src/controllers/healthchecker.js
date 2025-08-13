@@ -1,9 +1,9 @@
-import { apiResponse } from "../utils/apiResponse";
-import { asyncHandler } from "../utils/asyncHandler";
+import { apiResponse } from "../utils/apiResponse.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 
 const healthcheck = asyncHandler(async (req, res) => {
   return res
-  .statuscode(200)
+  .status(200)
   .json(new apiResponse(200,"OKAY","Health check passed",));
 
 });
