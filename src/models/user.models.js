@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-const userSchema = {
+const userSchema = new Schema({
   // MDB automatically adds _id field in database -->no need of adding that
   username: {
     type: String,
@@ -23,14 +23,28 @@ const userSchema = {
     trim: true,
     index: true,
   },
-  avatar:{
-    type:String,
-    required:true
+  avatar: {
+    type: String,
+    required: true,
   },
-  coverImage:{
-    type:String,
-    
-  }
-};
+  coverImage: {
+    type: String,
+  },
+  watchHistory: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "",
+    },
+  ],
+  password: {
+    type: string,
+    required: [true, "password is required"],
+  },
+  refreshToken: {
+    type:string
+  },
+},
+  { timestamps : true }
+);
 // this creates the user model in database if it not exist which will import schema from --> fro userSchmea
 export const User = mongoose.model("User", userSchema);
