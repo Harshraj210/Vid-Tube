@@ -75,6 +75,8 @@ userSchema.methods.generateAccesstoken = function () {
   );
 };
 
+// if someone gets access token then without refresh token new acces token cannot be generated { thatswhy refresh token live long}
+
 userSchema.methods.generateRfreshtoken = function () {
   return jwt.sign(
     {
