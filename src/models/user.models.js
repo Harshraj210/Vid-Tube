@@ -1,5 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import bcrypt, { compare } from "bcrypt";
+import jwt from "jsonwebtoken"
 const userSchema = new Schema(
   {
     // MDB automatically adds _id field in database -->no need of adding that
@@ -61,7 +62,14 @@ userSchema.methods.isPasswordcorrect=async function(password){
 }
 
 userSchema.methods.generateAccesstoken= function (){
-  
+  jwt.sign({
+
+    // payload
+    _id:this._id,
+    email:this.email,
+    fullname:this.fullname,
+    username:this.username
+  },)
 }
 // this creates the user model in database if it not exist which will import schema from --> fro userSchmea
 export const User = mongoose.model("User", userSchema);
