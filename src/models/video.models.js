@@ -1,6 +1,7 @@
 
 
 import mongoose, { Schema } from "mongoose";
+import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
 const videoSchema = new Schema({
   videoFile:{
     type:string,
@@ -37,4 +38,5 @@ const videoSchema = new Schema({
 },
 { timestamps:true })
 // this creates the user model in database if it not exist which will import schema from --> fro userSchmea
+videoSchema.plugin(mongooseAggregatePaginate)
 export const Video = mongoose.model("Video", videochema);
