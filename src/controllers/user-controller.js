@@ -2,6 +2,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { apiError } from "./utils/apiError.js";
 import { user } from "./model/user.model.js";
 import { uploadonCloudinary } from "./utils/cloudinary.js";
+import { apiResponse } from "../utils/apiResponse.js";
 
 const registerUser = asyncHandler(async (req, res) => {
   const { fullname, email, username, password } = req.body;
@@ -23,9 +24,30 @@ const registerUser = asyncHandler(async (req, res) => {
   const avatarLocalpath = req.file?.avatar[0]?.path;
   const coverimageLocalpath = req.file?.coverimage[0]?.path;
   if (!avatarLocalpath) {
-    throw new apiError(400, "Avattar file is missing");
+    throw new apiError(400, "Avatar file is missing");
   }
   const avatar = await uploadonCloudinary(avatarLocalpath);
+  let coverimage = "";
+  if (coverimageLocalpath) {
+    coverimage = await uploadonCloudinary(coverimage);
+  }
+  const user = await user.create({
+    fullname,
+    avatar: avatar.url,
+    coverimage: coverimage?.url || "",
+    email,
+    password,
+    username: username.toLowerCase(),
+  });
+  const createdUser = await user.findById(user._id).select(
+    "-password -refreshToken"
+  )
+  if (!createdUser) {
+    throw new apiError(400, "Something wrong happened");
+  }
+  return res
+  .status(201)
+  .json(new apiResponse)
 });
 
 export { registerUser };
