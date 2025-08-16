@@ -1,7 +1,8 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { apiError } from "./utils/apiError.js";
-import { user } from "./model/user.model.js";
-import { uploadonCloudinary } from "./utils/cloudinary.js";
+import {apiError} from "../utils/apiError.js";
+
+import  {User}  from "../models/user.models.js";
+import { uploadonCloudinary } from "../utils/cloudinary.js";
 import { apiResponse } from "../utils/apiResponse.js";
 
 const registerUser = asyncHandler(async (req, res) => {
@@ -15,23 +16,23 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new apiError(400, "All fields are required");
   }
 
-  const existedUser = awaituser.findOne({
+  const existedUser = await User.findOne({
     $or: [{ username }, { email }],
   });
   if (existedUser) {
     throw new apiError(400, "User allready Exist");
   }
-  const avatarLocalpath = req.file?.avatar[0]?.path;
-  const coverimageLocalpath = req.file?.coverimage[0]?.path;
+  const avatarLocalpath = req.files?.avatar?.[0]?.path;
+  const coverimageLocalpath = req.files?.coverimage?.[0]?.path;
   if (!avatarLocalpath) {
     throw new apiError(400, "Avatar file is missing");
   }
   const avatar = await uploadonCloudinary(avatarLocalpath);
   let coverimage = "";
   if (coverimageLocalpath) {
-    coverimage = await uploadonCloudinary(coverimage);
+    coverimage = await uploadonCloudinary(coverimageLocalpath);
   }
-  const user = await user.create({
+  const user = await User.create({
     fullname,
     avatar: avatar.url,
     coverimage: coverimage?.url || "",
@@ -39,15 +40,15 @@ const registerUser = asyncHandler(async (req, res) => {
     password,
     username: username.toLowerCase(),
   });
-  const createdUser = await user.findById(user._id).select(
-    "-password -refreshToken"
-  )
+  const createdUser = await User
+    .findById(user._id)
+    .select("-password -refreshToken");
   if (!createdUser) {
     throw new apiError(400, "Something wrong happened");
   }
   return res
-  .status(201)
-  .json(new apiResponse(201,createdUser,"User register successfully"))
+    .status(201)
+    .json(new apiResponse(201, createdUser, "User register successfully"));
 });
 
 export { registerUser };

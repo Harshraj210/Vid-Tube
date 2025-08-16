@@ -36,28 +36,32 @@ const userSchema = new Schema(
     watchHistory: [
       {
         type: Schema.Types.ObjectId,
-        ref: "",
+        ref: "Video",
       },
     ],
     password: {
-      type: string,
+      type: String,
       required: [true, "password is required"],
     },
     refreshToken: {
-      type: string,
+      type: String,
     },
   },
   { timestamps: true }
 );
-if (!this.modified("password")) return next();
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) return next();
+  this.password = await bcrypt.hash(this.password, 10);
+  next();
+});
 // before saving data to MDB first schema method checks wheather it is correct --> bcrypt hasing library  {ig DB is hacked --> hashing scrambles the paasword }
 userSchema.pre("save", async function (next) {
-  this.password = bcrypt.hash(this.password, 10);
-  // continue savbing
+  this.password = await bcrypt.hash(this.password, 10);
+  // continue saving
   next();
 });
 
-userSchema.methods.isPasswordcorrect = async function (password) {
+userSchema.methods.isPasswordCorrect = async function (password) {
   return await bcrypt.compare(password, this.password);
 };
 
@@ -77,7 +81,7 @@ userSchema.methods.generateAccesstoken = function () {
 
 // if someone gets access token then without refresh token new acces token cannot be generated { thatswhy refresh token live long}
 
-userSchema.methods.generateRfreshtoken = function () {
+userSchema.methods.generateRefreshtoken = function () {
   return jwt.sign(
     {
       // payload
