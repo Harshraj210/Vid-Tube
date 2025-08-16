@@ -27,11 +27,31 @@ const registerUser = asyncHandler(async (req, res) => {
   if (!avatarLocalpath) {
     throw new apiError(400, "Avatar file is missing");
   }
-  const avatar = await uploadonCloudinary(avatarLocalpath);
-  let coverimage = "";
-  if (coverimageLocalpath) {
-    coverimage = await uploadonCloudinary(coverimageLocalpath);
+  // const avatar = await uploadonCloudinary(avatarLocalpath);
+  // let coverimage = "";
+  // if (coverimageLocalpath) {
+  //   coverimage = await uploadonCloudinary(coverimageLocalpath);
+  // }
+
+  let avatar;
+  try {
+   avatar= await uploadonCloudinary(avatarLocalpath)
+   console.log("UPLOAD AVATAR SUCCESSFULLY")
+  } catch (error) {
+    console.log("Error in uploading the avatar",error)
+    throw new apiError(500, "Failed to upload Avatar");
   }
+
+  let coverimage;
+  try {
+   coverimage= await uploadonCloudinary(coverimageLocalpath)
+   console.log("UPLOAD COVERIMAGE SUCCESSFULLY")
+  } catch (error) {
+    console.log("Error in uploading the coverimage",error)
+    throw new apiError(500, "Failed to upload coverimge");
+  }
+
+
   const user = await User.create({
     fullname,
     avatar: avatar.url,
