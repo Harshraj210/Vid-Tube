@@ -2,7 +2,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import {apiError} from "../utils/apiError.js";
 
 import  {User}  from "../models/user.models.js";
-import { uploadonCloudinary } from "../utils/cloudinary.js";
+import { uploadonCloudinary,deletefromCloudinary } from "../utils/cloudinary.js";
 import { apiResponse } from "../utils/apiResponse.js";
 
 const registerUser = asyncHandler(async (req, res) => {
@@ -52,23 +52,35 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 
 
-  const user = await User.create({
-    fullname,
-    avatar: avatar.url,
-    coverimage: coverimage?.url || "",
-    email,
-    password,
-    username: username.toLowerCase(),
-  });
-  const createdUser = await User
-    .findById(user._id)
-    .select("-password -refreshToken");
-  if (!createdUser) {
-    throw new apiError(400, "Something wrong happened");
+  try {
+    const user = await User.create({
+      fullname,
+      avatar: avatar.url,
+      coverimage: coverimage?.url || "",
+      email,
+      password,
+      username: username.toLowerCase(),
+    });
+    const createdUser = await User
+      .findById(user._id)
+      .select("-password -refreshToken");
+    if (!createdUser) {
+      throw new apiError(400, "Something wrong happened");
+    }
+    return res
+      .status(201)
+      .json(new apiResponse(201, createdUser, "User register successfully"));
+  } catch (error) {
+    console.log("User creation failed");
+    if (avatar) {
+      await deletefromCloudinary(avatar.public_id)
+    }
+    if (coverimage) {
+      await deletefromCloudinary(coverimage.public_id)
+    }
+    throw new apiError(500, "Something went wrong while registering the user");
+    
   }
-  return res
-    .status(201)
-    .json(new apiResponse(201, createdUser, "User register successfully"));
 });
 
 export { registerUser };
