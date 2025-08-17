@@ -21,5 +21,6 @@ const errorHandler = (err, req, res, next) => {
   };
   return res.status(error.statusCode).json(response);
 };
+// for other files to use
 
 export { errorHandler };
