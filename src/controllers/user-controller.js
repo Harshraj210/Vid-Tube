@@ -82,5 +82,6 @@ const registerUser = asyncHandler(async (req, res) => {
     
   }
 });
+// exporting the file
 
 export { registerUser };
