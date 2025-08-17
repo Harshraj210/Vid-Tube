@@ -3,7 +3,6 @@ import mongoose from "mongoose";
 
 import { apiError } from "../utils/apiError.js";
 
-
 const errorHandler = (err, req, res, next) => {
   let error = err;
   if (!(error instanceof apiError)) {
@@ -11,7 +10,12 @@ const errorHandler = (err, req, res, next) => {
       error.statusode || error instanceof mongoose.Error ? 400 : 500;
 
     const errormessage = error.message || "Something went wrong!!";
-    error = new apiError(statuscode, errormessage, error?.errors || [], err.stack);
+    error = new apiError(
+      statuscode,
+      errormessage,
+      error?.errors || [],
+      err.stack
+    );
   }
 
   const response = {

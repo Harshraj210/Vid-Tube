@@ -86,12 +86,13 @@ userSchema.methods.generateRefreshtoken = function () {
   return jwt.sign(
     {
       // payload
-      _id: this._id
-      
+      _id: this._id,
     },
     process.env.REFRESH_TOKEN_SECRET,
     { expiresIn: process.env.REFRESH_TOKEN_EXPIRY }
+    // expiry token is in env file
   );
 };
+
 // this creates the user model in database if it not exist which will import schema from --> fro userSchmea
 export const User = mongoose.model("User", userSchema);
