@@ -75,6 +75,7 @@ userSchema.methods.generateAccesstoken = function () {
       username: this.username,
     },
     process.env.ACCESS_TOKEN_SECRET,
+    // it access keys from .env file
     { expiresIn: process.env.ACCESS_TOKEN_EXPIRY }
   );
 };
