@@ -7,6 +7,7 @@ import {
   deletefromCloudinary,
 } from "../utils/cloudinary.js";
 import { apiResponse } from "../utils/apiResponse.js";
+import jwt from "jsonwebtoken";
 
 const generateAccessandRefreshtoken = async (userId) => {
   try {
@@ -128,25 +129,41 @@ const loginUser = asyncHandler(async (req, res) => {
   );
 
   const Loggedinuser = await user
-  // sending deatils to frontend hiding the password and refresh token
+    // sending deatils to frontend hiding the password and refresh token
     .findById(user._id)
     .select("-password -Refreshtoken");
 
-    const options ={
-      httpOnly:true,
-      secure:process.env.NODE_ENV==="production",
-    }
-    return res 
+  const options = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+  }``;
+  return res
     .status(200)
-    .cookie("AcesssToken :",Accesstoken,options)
-    .cookie("RefreshToken :",Refreshtoken,options)
-    .json(new apiResponse(200,
-      {user:Loggedinuser,Accesstoken,Refreshtoken},
-      "User logged in Successfully"
-    ))
+    .cookie("AcesssToken :", Accesstoken, options)
+    .cookie("RefreshToken :", Refreshtoken, options)
+    .json(
+      new apiResponse(
+        200,
+        { user: Loggedinuser, Accesstoken, Refreshtoken },
+        "User logged in Successfully"
+      )
+    );
+
+  const RefreshAccessToken = asyncHandler((req, res) => {
+    const incomingRefreshtoken =
+      req.cookies.Refreshtoken || req.body.Refreshtoken;
+    if (!incomingRefreshtoken) {
+      throw new apiError(404, "refresh token required");
+    }
+  });
+  try {
+      const decodedToken =jwt.verify(
+      incomingRefreshtoken,
+      process.env.REFRESH_TOKEN_SECRET
+    )
+  } catch (error) {}
 });
+
 // exporting the file
 
-export { registerUser,
-        loginUser
- };
+export { registerUser, loginUser };
