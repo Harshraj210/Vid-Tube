@@ -1,14 +1,30 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
-import {apiError} from "../utils/apiError.js";
+import { apiError } from "../utils/apiError.js";
 
-import  {User}  from "../models/user.models.js";
-import { uploadonCloudinary,deletefromCloudinary } from "../utils/cloudinary.js";
+import { User } from "../models/user.models.js";
+import {
+  uploadonCloudinary,
+  deletefromCloudinary,
+} from "../utils/cloudinary.js";
 import { apiResponse } from "../utils/apiResponse.js";
 
+const generateAccessandRefreshtoken = async (userId) => {
+  try {
+    const user = await findById(userId);
+    // for user existence
+    if (!user) {
+      throw new apiError(404, "User not found");
+    }
+    const Accesstoken = user.generateAccesstoken();
+    const Refreshtoken = user.generateRefreshtoken();
 
-const generateAccessandRefreshtoken = async(userId)=>{
-  const user = await findById(userId)
-}
+    user.Refreshtoken = Refreshtoken;
+    await user.save({ validateBeforeSave: false });
+    return { Accesstoken, Refreshtoken };
+  } catch (error) {
+    throw new apiError(404, "Something went wrong while generating tokens!!!");
+  }
+};
 
 const registerUser = asyncHandler(async (req, res) => {
   const { fullname, email, username, password } = req.body;
@@ -40,22 +56,21 @@ const registerUser = asyncHandler(async (req, res) => {
 
   let avatar;
   try {
-   avatar= await uploadonCloudinary(avatarLocalpath)
-   console.log("UPLOAD AVATAR SUCCESSFULLY")
+    avatar = await uploadonCloudinary(avatarLocalpath);
+    console.log("UPLOAD AVATAR SUCCESSFULLY");
   } catch (error) {
-    console.log("Error in uploading the avatar",error)
+    console.log("Error in uploading the avatar", error);
     throw new apiError(500, "Failed to upload Avatar");
   }
 
   let coverimage;
   try {
-   coverimage= await uploadonCloudinary(coverimageLocalpath)
-   console.log("UPLOAD COVERIMAGE SUCCESSFULLY")
+    coverimage = await uploadonCloudinary(coverimageLocalpath);
+    console.log("UPLOAD COVERIMAGE SUCCESSFULLY");
   } catch (error) {
-    console.log("Error in uploading the coverimage",error)
+    console.log("Error in uploading the coverimage", error);
     throw new apiError(500, "Failed to upload coverimge");
   }
-
 
   try {
     const user = await User.create({
@@ -66,9 +81,9 @@ const registerUser = asyncHandler(async (req, res) => {
       password,
       username: username.toLowerCase(),
     });
-    const createdUser = await User
-      .findById(user._id)
-      .select("-password -refreshToken");
+    const createdUser = await User.findById(user._id).select(
+      "-password -refreshToken"
+    );
     if (!createdUser) {
       throw new apiError(400, "Something wrong happened");
     }
@@ -78,15 +93,25 @@ const registerUser = asyncHandler(async (req, res) => {
   } catch (error) {
     console.log("User creation failed");
     if (avatar) {
-      await deletefromCloudinary(avatar.public_id)
+      await deletefromCloudinary(avatar.public_id);
     }
     if (coverimage) {
-      await deletefromCloudinary(coverimage.public_id)
+      await deletefromCloudinary(coverimage.public_id);
     }
     throw new apiError(500, "Something went wrong while registering the user");
-    
   }
 });
+
+
+const loginUser = asyncHandler((req,res)=>{
+    const { email,username,password}=req.body
+
+    // validation
+    if (!email) {
+      throw new apiError(404,"Email is required")
+    }
+}
+)
 // exporting the file
 
 export { registerUser };
