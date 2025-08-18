@@ -102,16 +102,17 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 });
 
+const loginUser = asyncHandler(async (req, res) => {
+  const { email, username, password } = req.body;
 
-const loginUser = asyncHandler((req,res)=>{
-    const { email,username,password}=req.body
-
-    // validation
-    if (!email) {
-      throw new apiError(404,"Email is required")
-    }
-}
-)
+  // validation
+  if (!email) {
+    throw new apiError(404, "Email is required");
+  }
+  const existedUser = await User.findOne({
+    $or: [{ username }, { email }],
+  });
+});
 // exporting the file
 
 export { registerUser };
