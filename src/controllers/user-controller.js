@@ -103,6 +103,7 @@ const registerUser = asyncHandler(async (req, res) => {
 });
 
 const loginUser = asyncHandler(async (req, res) => {
+  // access password and usrname ,password
   const { email, username, password } = req.body;
 
   // validation
@@ -110,6 +111,7 @@ const loginUser = asyncHandler(async (req, res) => {
     throw new apiError(404, "Email is required");
   }
   const user = await User.findOne({
+    // checking if it exists in Database
     $or: [{ username }, { email }],
   });
   if (!user) {
@@ -126,6 +128,7 @@ const loginUser = asyncHandler(async (req, res) => {
   );
 
   const Loggedinuser = await user
+  // sending deatils to frontend hiding the password and refresh token
     .findById(user._id)
     .select("-password -Refreshtoken");
 
