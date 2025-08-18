@@ -116,7 +116,18 @@ const loginUser = asyncHandler(async (req, res) => {
     throw new apiError(404, "User not found");
   }
 
-  const isPasswordCorrect=await user.isPasswordCorrect(password);
+  const isPasswordvalid = await user.isPasswordCorrect(password);
+  if (!isPasswordvalid) {
+    throw new apiError(404, "Invalid credentials");
+  }
+
+  const { Accesstoken, Refreshtoken } = await generateAccessandRefreshtoken(
+    user._id
+  );
+
+  const Loggedinuser = await user
+    .findById(user._id)
+    .select("-password -Refreshtoken");
 });
 // exporting the file
 
