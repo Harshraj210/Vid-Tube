@@ -5,6 +5,11 @@ import  {User}  from "../models/user.models.js";
 import { uploadonCloudinary,deletefromCloudinary } from "../utils/cloudinary.js";
 import { apiResponse } from "../utils/apiResponse.js";
 
+
+const generateAccessandRefreshtoken = async(userId)=>{
+  const user = await findById(userId)
+}
+
 const registerUser = asyncHandler(async (req, res) => {
   const { fullname, email, username, password } = req.body;
 
