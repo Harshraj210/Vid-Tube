@@ -109,9 +109,14 @@ const loginUser = asyncHandler(async (req, res) => {
   if (!email) {
     throw new apiError(404, "Email is required");
   }
-  const existedUser = await User.findOne({
+  const user = await User.findOne({
     $or: [{ username }, { email }],
   });
+  if (!user) {
+    throw new apiError(404, "User not found");
+  }
+
+  const isPasswordCorrect=await user.isPasswordCorrect(password);
 });
 // exporting the file
 
