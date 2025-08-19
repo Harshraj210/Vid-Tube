@@ -18,5 +18,6 @@ router.route("/register").post(
   // fields -->to avatar and coverimg.
   registerUser)
 
+  router.route("/logout").post(verifyJWT,logoutUser)
 
 export default router  
