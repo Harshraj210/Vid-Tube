@@ -149,68 +149,69 @@ const loginUser = asyncHandler(async (req, res) => {
       )
     );
 
-  const logoutUser = asyncHandler(async(req,res)=>{
+  const logoutUser = asyncHandler(async (req, res) => {
     await User.findByIdAndUpdate(
       req.user._id,
-       { $unset: { Refreshtoken: 1 } }, // removes the field
-    { new: true }
-  );
+      { $unset: { Refreshtoken: 1 } }, // removes the field
+      { new: true }
+    );
 
-  // clear cookies
-  const options = {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-  };
+    // clear cookies
+    const options = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+    };
 
-  return res
-    .status(200)
-    .clearCookie("accessToken", options)
-    .clearCookie("refreshToken", options)
-    .json(new apiResponse(200, {}, "User logged out successfully"));
+    return res
+      .status(200)
+      .clearCookie("accessToken", options)
+      .clearCookie("refreshToken", options)
+      .json(new apiResponse(200, {}, "User logged out successfully"));
+  });
 
-    
-  })
-
-  const RefreshAccessToken = asyncHandler((req, res) => {
+  const RefreshAccessToken = asyncHandler(async (req, res) => {
     const incomingRefreshtoken =
       req.cookies.Refreshtoken || req.body.Refreshtoken;
     if (!incomingRefreshtoken) {
       throw new apiError(404, "refresh token required");
     }
     try {
-    const decodedToken = jwt.verify(
-      incomingRefreshtoken,
-      process.env.REFRESH_TOKEN_SECRET
-    );
-    const user = await User.findById(decodedToken?._id);
-    if (!user) {
-      throw new apiError(404, "Invalid Refresh token!!");
-    }
+      const decodedToken = jwt.verify(
+        incomingRefreshtoken,
+        process.env.REFRESH_TOKEN_SECRET
+      );
+      const user = await User.findById(decodedToken?._id);
+      if (!user) {
+        throw new apiError(404, "Invalid Refresh token!!");
+      }
 
-    if (incomingRefreshtoken != user?.Refreshtoken) {
-      throw new apiError(404, "Invalid Refresh Token");
+      if (incomingRefreshtoken != user?.Refreshtoken) {
+        throw new apiError(404, "Invalid Refresh Token");
+      }
+      const options = {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+      };
+      const { Accesstoken, RefreshhToken: newRfreshtoken } =
+        await generateAccessandRefreshtoken(user._id);
+      return res
+        .status(200)
+        .cookie("accessToken", Accesstoken, options)
+        .cookie("refreshToken", newRfreshtoken, options)
+        .json(
+          new apiResponse(
+            200,
+            { Accesstoken, RefreshhToken: newRfreshtoken },
+            "Access token refreshed successfully"
+          )
+        );
+    } catch (error) {
+      throw new apiError(
+        404,
+        "Something wrong happened while generating token"
+      );
     }
-    const options = {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-  };
-  const { Accesstoken,RefreshhToken:newRfreshtoken}= await generateAccessandRefreshtoken(user._id)
-  return res
-    .status (200)
-    .cookie("accessToken",Accesstoken,options)
-    .cookie("refreshToken",newRfreshtoken,options)
-    .json(
-      new apiResponse(
-        200,
-        { Accesstoken,RefreshhToken:newRfreshtoken },
-        "Access token refreshed successfully"
-      )
-    );  
-  } catch (error) {
-    throw new apiError(404, "Something wrong happened while generating token");
-  }
   });
-  
 });
 
 // exporting the file
