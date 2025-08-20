@@ -198,12 +198,38 @@ const changeCurrentpassword = asyncHandler(async (req, res) => {
   await user.save({ validateBeforeSave: false });
   return res
     .status(200)
-    .cookie("accessToken", accessToken, options)
-    .cookie("refreshToken", newRefreshToken, options)
+
     .json(new apiResponse(200, {}, "Password Changed successfully"));
 });
-const getCurrentuser = asyncHandler(async (req, res) => {});
-const updateAccountdetails = asyncHandler(async (req, res) => {});
+const getCurrentuser = asyncHandler(async (req, res) => {
+  return res
+    .status(200)
+    .json(new apiResponse(200, req.user, "Current User Details"));
+});
+const updateAccountdetails = asyncHandler(async (req, res) => {
+  const { email, username, fullname } = req.body;
+  if (!email) {
+    throw new apiError(404, "Email is required");
+  }
+  if (!fullname) {
+    throw new apiError(404, "Fullname is required");
+  }
+  const user = await User.findByIdAndUpdate(
+    req.user?._id,
+    {
+      $set: {
+        fullname,
+        email: email,
+      },
+    },
+    { new: true }
+  ).select("-password -refreshToken");
+  return res
+    .status(200)
+    .json(
+      new apiResponse(200, req.user, "Account Details updated Successfully")
+    );
+});
 const updateUseravatar = asyncHandler(async (req, res) => {});
 const updateUsercoverimage = asyncHandler(async (req, res) => {});
 
