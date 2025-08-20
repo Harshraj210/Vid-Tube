@@ -186,7 +186,7 @@ const RefreshAccessToken = asyncHandler(async (req, res) => {
     throw new apiError(401, "Something went wrong while refreshing token");
   }
 });
-
+// ---------------------- Updating Details ----------------------
 const changeCurrentpassword = asyncHandler(async (req, res) => {
   const { oldPassword, newPassword } = req.body;
   const user = await User.findById(req.user?._id);
@@ -237,11 +237,11 @@ const updateUseravatar = asyncHandler(async (req, res) => {
   if (!avatar.url) {
     throw new apiError(404, "Something went wrong while uploading Avatar!!!");
   }
-  const user=await User.findByIdAndUpdate(
-  req.user?._id,
+  const user = await User.findByIdAndUpdate(
+    req.user?._id,
     {
       $set: {
-        avatar:avatar.url
+        avatar: avatar.url,
       },
     },
     { new: true }
@@ -250,7 +250,41 @@ const updateUseravatar = asyncHandler(async (req, res) => {
     .status(200)
     .json(new apiResponse(200, user, "Avatar updated Successfully"));
 });
-const updateUsercoverimage = asyncHandler(async (req, res) => {});
+const updateUsercoverimage = asyncHandler(async (req, res) => {
+  const coverimageLocalpath = req.files?.path;
+  if (!coverimageLocalpath) {
+    throw new apiError(404, "File is required!!!");
+  }
+  const coverimage = await uploadonCloudinary(coverimageLocalpath);
+  if (!coverimage.url) {
+    throw new apiError(
+      404,
+      "Something went wrong while uploading Cover Image!!!"
+    );
+  }
+  const user = await User.findByIdAndUpdate(
+    req.user?._id,
+    {
+      $set: {
+        coverimage: coverimage.url,
+      },
+    },
+    { new: true }
+  ).select("-password -refreshToken");
+  return res
+    .status(200)
+    .json(new apiResponse(200, user, "Cover Image updated Successfully"));
+});
 
 // ---------------------- Exports ----------------------
-export { registerUser, loginUser, logoutUser, RefreshAccessToken };
+export {
+  registerUser,
+  loginUser,
+  logoutUser,
+  RefreshAccessToken,
+  changeCurrentpassword,
+  getCurrentuser,
+  updateAccountdetails,
+  updateUseravatar,
+  updateUsercoverimage,
+};
