@@ -226,11 +226,30 @@ const updateAccountdetails = asyncHandler(async (req, res) => {
   ).select("-password -refreshToken");
   return res
     .status(200)
-    .json(
-      new apiResponse(200, req.user, "Account Details updated Successfully")
-    );
+    .json(new apiResponse(200, user, "Account Details updated Successfully"));
 });
-const updateUseravatar = asyncHandler(async (req, res) => {});
+const updateUseravatar = asyncHandler(async (req, res) => {
+  const avatarLocalpath = req.files?.path;
+  if (!avatarLocalpath) {
+    throw new apiError(404, "File is required!!!");
+  }
+  const avatar = await uploadonCloudinary(avatarLocalpath);
+  if (!avatar.url) {
+    throw new apiError(404, "Something went wrong while uploading Avatar!!!");
+  }
+  const user=await User.findByIdAndUpdate(
+  req.user?._id,
+    {
+      $set: {
+        avatar:avatar.url
+      },
+    },
+    { new: true }
+  ).select("-password -refreshToken");
+  return res
+    .status(200)
+    .json(new apiResponse(200, user, "Avatar updated Successfully"));
+});
 const updateUsercoverimage = asyncHandler(async (req, res) => {});
 
 // ---------------------- Exports ----------------------
