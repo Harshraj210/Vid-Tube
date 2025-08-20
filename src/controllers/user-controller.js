@@ -276,14 +276,38 @@ const updateUsercoverimage = asyncHandler(async (req, res) => {
     .json(new apiResponse(200, user, "Cover Image updated Successfully"));
 });
 const getUserchannelprofile = asyncHandler(async (req, res) => {
-  const {username}=req.params
+  const { username } = req.params;
   if (!username?.trim()) {
-    throw new apiError(404,"Username is required")
+    throw new apiError(404, "Username is required");
   }
-})
-const getWatchhistory = asyncHandler(async (req, res) => {
-
-})
+  const Channel = await User.aggregate([
+    // USING AGGREGATION PIPELINES
+    {
+      // $match --> filters data
+      $match: {
+        username: username?.toLowerCase(),
+      },
+    },
+    {
+      //  $lookup --> used to attch collection (oders with user's)
+      $lookup: {
+        from: "subscriptions",
+        localField: "_id",
+        foreignField: "channel",
+        as: "sunscribers",
+      },
+    },
+    {
+      $lookup: {
+        from: "subscriptions",
+        localField: "_id",
+        foreignField: "channel",
+        as: "sunscribedTo",
+      },
+    },
+  ]);
+});
+const getWatchhistory = asyncHandler(async (req, res) => {});
 
 // ---------------------- Exports ----------------------
 export {
