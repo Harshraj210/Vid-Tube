@@ -275,6 +275,15 @@ const updateUsercoverimage = asyncHandler(async (req, res) => {
     .status(200)
     .json(new apiResponse(200, user, "Cover Image updated Successfully"));
 });
+const getUserchannelprofile = asyncHandler(async (req, res) => {
+  const {username}=req.params
+  if (!username?.trim()) {
+    throw new apiError(404,"Username is required")
+  }
+})
+const getWatchhistory = asyncHandler(async (req, res) => {
+
+})
 
 // ---------------------- Exports ----------------------
 export {
