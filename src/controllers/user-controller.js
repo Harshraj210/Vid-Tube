@@ -11,7 +11,7 @@ import jwt from "jsonwebtoken";
 // ---------------------- Generate Tokens ----------------------
 const generateAccessandRefreshtoken = async (userId) => {
   try {
-    const user = await User.findById(userId);   // ✅ fixed
+    const user = await User.findById(userId); // ✅ fixed
     if (!user) throw new apiError(404, "User not found");
 
     const accessToken = user.generateAccesstoken();
@@ -95,8 +95,9 @@ const loginUser = asyncHandler(async (req, res) => {
   const isPasswordValid = await user.isPasswordCorrect(password);
   if (!isPasswordValid) throw new apiError(400, "Invalid credentials");
 
-  const { accessToken, refreshToken } =
-    await generateAccessandRefreshtoken(user._id);
+  const { accessToken, refreshToken } = await generateAccessandRefreshtoken(
+    user._id
+  );
 
   const Loggedinuser = await User.findById(user._id).select(
     "-password -Refreshtoken"
@@ -109,7 +110,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .cookie("accessToken", accessToken, options)    // ✅ fixed names
+    .cookie("accessToken", accessToken, options) // ✅ fixed names
     .cookie("refreshToken", refreshToken, options)
     .json(
       new apiResponse(
@@ -124,7 +125,7 @@ const loginUser = asyncHandler(async (req, res) => {
 const logoutUser = asyncHandler(async (req, res) => {
   await User.findByIdAndUpdate(
     req.user._id,
-    { $set: { Refreshtoken: undefined } },  // ✅ clear refresh token
+    { $set: { Refreshtoken: undefined } }, // ✅ clear refresh token
     { new: true }
   );
 
@@ -186,12 +187,25 @@ const RefreshAccessToken = asyncHandler(async (req, res) => {
   }
 });
 
-
-const changeCurrentpassword =asyncHandler(async(req,res)=>{})
-const getCurrentuser =asyncHandler(async(req,res)=>{})
-const updateAccountdetails =asyncHandler(async(req,res)=>{})
-const updateUseravatar =asyncHandler(async(req,res)=>{})
-const updateUsercoverimage =asyncHandler(async(req,res)=>{})
+const changeCurrentpassword = asyncHandler(async (req, res) => {
+  const { oldPassword, newPassword } = req.body;
+  const user = await User.findById(req.user?._id);
+  const isPasswordValid = await user.isPasswordCorrect(oldPassword);
+  if (!isPasswordValid) {
+    throw new apiError(404, "Invalid Old Password");
+  }
+  user.password = newPassword;
+  await user.save({ validateBeforeSave: false });
+  return res
+    .status(200)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", newRefreshToken, options)
+    .json(new apiResponse(200, {}, "Password Changed successfully"));
+});
+const getCurrentuser = asyncHandler(async (req, res) => {});
+const updateAccountdetails = asyncHandler(async (req, res) => {});
+const updateUseravatar = asyncHandler(async (req, res) => {});
+const updateUsercoverimage = asyncHandler(async (req, res) => {});
 
 // ---------------------- Exports ----------------------
 export { registerUser, loginUser, logoutUser, RefreshAccessToken };
