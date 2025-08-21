@@ -365,10 +365,48 @@ const getWatchhistory = asyncHandler(async (req, res) => {
         from: "videos",
         localField: "watchHistory",
         foreignField: "_id",
-        as: "watchhistory",
+        as: "watchHistory",
+        pipeline:[
+          {
+            $lookup:{
+              from:"Users",
+              localField:"owner",
+              foreignField:"_id:",
+              as:"owner",
+              pipeline:[
+                {
+                 $project:{
+                  fullname:1,
+                  username:1,
+                  avatar:1
+                 } 
+                }
+              ]
+            }
+          },
+          
+        ]
       },
     },
+    {
+      $addFields:{
+        owner:{
+
+        }
+      }
+    }
+
+        
   ]);
+  return res
+    .status(200)
+    .json(
+      new apiResponse(
+        200,
+        user[0]?.Watchhistory,
+        "Watch History Fetched Successfully :)"
+      )
+    );
 });
 
 // ---------------------- Exports ----------------------
