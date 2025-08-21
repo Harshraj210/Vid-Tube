@@ -7,6 +7,7 @@ import {
 } from "../utils/cloudinary.js";
 import { apiResponse } from "../utils/apiResponse.js";
 import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
 
 // ---------------------- Generate Tokens ----------------------
 const generateAccessandRefreshtoken = async (userId) => {
@@ -294,7 +295,7 @@ const getUserchannelprofile = asyncHandler(async (req, res) => {
         from: "subscriptions",
         localField: "_id",
         foreignField: "channel",
-        as: "sunscribers",
+        as: "subscribers",
       },
     },
     {
@@ -306,46 +307,69 @@ const getUserchannelprofile = asyncHandler(async (req, res) => {
       },
     },
     {
-      $addFields:{
-        subscriberscount:{
-          $size:"$subscribers"
+      $addFields: {
+        subscriberscount: {
+          $size: "$subscribers",
         },
-        $channelsubscribedtocount:{
-          $size :"subscribedTo"
+        $channelsubscribedtocount: {
+          $size: "subscribedTo",
         },
-        $channelissubscribedtocount:{
-          $size :"subscribedTo"
+        $channelissubscribedtocount: {
+          $size: "subscribedTo",
         },
-        $issubscribedto:{
-          $cond:{
-            if:{$in:[req.user?._id,"subscribers.subscriber"]},
-            then:true,
-            else:false
-          }
-        }
-      }
+        $issubscribedto: {
+          $cond: {
+            if: { $in: [req.user?._id, "subscribers.subscriber"] },
+            then: true,
+            else: false,
+          },
+        },
+      },
     },
     {
-      $project:{
+      $project: {
         fullname: 1,
         username: 1,
         avatar: 1,
         coverimage: 1,
-        channelissubscribedtocount:1,
-        issubscribedto:1,
-        subscriberscount:1,
-        email:1
-      }
-    }
+        channelissubscribedtocount: 1,
+        issubscribedto: 1,
+        subscriberscount: 1,
+        email: 1,
+      },
+    },
   ]);
   if (!Channel?.length) {
-    throw new apiError(404,"Channel not found")
+    throw new apiError(404, "Channel not found");
   }
   return res
     .status(200)
-    .json(new apiResponse(200, Channel[0], "Channel profile details fetched Successfully :)"));
+    .json(
+      new apiResponse(
+        200,
+        Channel[0],
+        "Channel profile details fetched Successfully :)"
+      )
+    );
 });
-const getWatchhistory = asyncHandler(async (req, res) => {});
+const getWatchhistory = asyncHandler(async (req, res) => {
+  const user = await User.aggregate([
+    {
+      $match: {
+        _id: new mongoose.Types.ObjectId(req.user?._id),
+      },
+    },
+
+    {
+      $lookup: {
+        from: "videos",
+        localField: "watchHistory",
+        foreignField: "_id",
+        as: "watchhistory",
+      },
+    },
+  ]);
+});
 
 // ---------------------- Exports ----------------------
 export {
