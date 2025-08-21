@@ -420,4 +420,6 @@ export {
   updateAccountdetails,
   updateUseravatar,
   updateUsercoverimage,
+  getUserchannelprofile,
+  getWatchhistory
 };

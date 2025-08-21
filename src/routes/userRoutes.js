@@ -1,5 +1,9 @@
 import { Router } from "express";
-import { registerUser,logoutUser } from "../controllers/user-controller.js";
+import { registerUser,
+  logoutUser,
+   loginUser,
+    RefreshAccessToken }
+     from "../controllers/user-controller.js";
 import { upload } from "../middleware/multer-middleware.js";
 import { verifyJWT } from "../middleware/authmiddleware.js";
 
@@ -17,6 +21,8 @@ router.route("/register").post(
   ]),
   // fields -->to avatar and coverimg.
   registerUser)
+  router.route("/login").post(loginUser)
+  router.route("/refresh-token").post(RefreshAccessToken)
 
   router.route("/logout").post(verifyJWT,logoutUser)
 
